@@ -45,6 +45,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-parser</artifactId>
+			<version>23.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
