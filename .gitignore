@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-groupdocs-parser-23.2.jar
+
 
 ### STS ###
 .apt_generated
