@@ -14,16 +14,18 @@ public class ExtractedDocumentDao {
     @Autowired
     private ExtractedDocumentRepository extractedDocumentRepository;
 
-    public List<ExtractedDocument> getAllDocuments(){
-        return extractedDocumentRepository.findAll();
-    }
-
     public void include(ExtractedDocument extractedDocument){
         extractedDocumentRepository.save(extractedDocument);
     }
 
+    public List<ExtractedDocument> getAllDocuments(){
+        return extractedDocumentRepository.findAll();
+    }
+
     public ExtractedDocument getExtractedDocumentById(long id){
         Optional<ExtractedDocument> res = extractedDocumentRepository.findById(id);
+
+//        extractedDocumentRepository.
 
         if(res.isPresent()){
             return res.get();
@@ -33,9 +35,6 @@ public class ExtractedDocumentDao {
         }
     }
 
-//    public byte[] getImageById(String name){
-//        extractedDocumentRepository.
-//    }
 
     public void deleteExtractedDocument(ExtractedDocument extractedDocument){
         extractedDocumentRepository.delete(extractedDocument);
