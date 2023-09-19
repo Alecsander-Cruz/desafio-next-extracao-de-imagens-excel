@@ -1,9 +1,6 @@
 package next.school.cesar.desafionextextracaodeimagensexcel.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +20,7 @@ public class ExtractedDocument {
     private long id;
 
 
+    @Column(length = 1000000)
     private List<String> imagesListLink;
 
 }
