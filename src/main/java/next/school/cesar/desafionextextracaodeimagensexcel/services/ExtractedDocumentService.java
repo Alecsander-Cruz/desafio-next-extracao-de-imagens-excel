@@ -1,157 +1,86 @@
 package next.school.cesar.desafionextextracaodeimagensexcel.services;
 
-import org.apache.poi.ss.usermodel.PictureData;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import next.school.cesar.desafionextextracaodeimagensexcel.dao.ExtractedDocumentDao;
+import next.school.cesar.desafionextextracaodeimagensexcel.entities.ExtractedDocument;
+import next.school.cesar.desafionextextracaodeimagensexcel.repositories.ExtractedDocumentRepository;
+import next.school.cesar.desafionextextracaodeimagensexcel.utils.ExtractorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
-
-//@RestController
-//@RequestMapping("/")
 @Service
 public class ExtractedDocumentService {
 
-//    private AmazonClientService amazonClientService;
-//
+    @Autowired
+    private ExtractedDocumentDao extractedDocumentDao;
+
+    @Autowired
+    private AmazonClientService amazonClientService;
+
+    @Autowired
+    private DocumentExtractorService documentExtractorService;
+
 //    @Autowired
-//    ExtractedDocumentService(AmazonClientService amazonClientService){
+//    ExtractedDocumentService(AmazonClientService amazonClientService, DocumentExtractorService documentExtractorService){
 //        this.amazonClientService = amazonClientService;
-//    }
-//
-//    @PostMapping
-//    public void uploadImages(){
-//        setInputAndOutput();
-//        saveImages();
+//        this.documentExtractorService = documentExtractorService;
 //    }
 
-    private String inputFilePath;
-    private String outputDirPath;
+    public void include(MultipartFile multipartFile){
+        documentExtractorService.setFileAndOutput(multipartFile);
+        documentExtractorService.saveImages();
 
-    public ExtractedDocumentService() {
-    }
+        List<String> urls = new ArrayList<>();
+        List<File> imageList = ExtractorUtils.getAllImagesFromFolder();
 
-    public void setInputAndOutput(){
-
-        try{
-        // Caminho para o arquivo XLSX de entrada
-        this.inputFilePath = "E:\\backup\\documentos\\Documentos\\Alecsander\\Dev\\Next-Desafio-Grupo\\teste_planilha.xlsx";
-
-        // Caminho para o diretório onde as imagens serão armazenadas
-        this.outputDirPath = "E:\\backup\\documentos\\Documentos\\Alecsander\\Dev\\Next-Desafio-Grupo\\desafio-next-extracao-de-imagens-excel\\savedImages\\";
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private void tryToCreateDirectory(){
-        try {
-            File outputDir = new File(outputDirPath);
-            if(!outputDir.exists()){
-                outputDir.mkdirs();
+        if(!imageList.isEmpty()){
+            for(File image: imageList){
+                String url = this.amazonClientService.uploadImage(image);
+                urls.add(url);
             }
-        }catch(Exception e){
-            e.printStackTrace();
         }
+        else{
+            urls.add("Nenhuma imagem foi extraída do documento!");
+        }
+
+        ExtractedDocument extractedDocument = new ExtractedDocument();
+        extractedDocument.setImagesListLink(urls);
+
+        extractedDocumentDao.include(extractedDocument);
+
     }
 
-
-    private Workbook loadXLSXFile(){
-        try {
-            FileInputStream fis = new FileInputStream(new File(inputFilePath));
-
-            return new XSSFWorkbook(fis);
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-
-        return null;
+    public List<ExtractedDocument> getAllDocuments(){
+        return extractedDocumentDao.getAllDocuments();
     }
 
-    private List<? extends PictureData> getAllPicturesFromXLSX(){
-        try{
-            Workbook workbook = loadXLSXFile();
-
-            return workbook.getAllPictures();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return null;
+    public ExtractedDocument getExtractedDocumentById(long id){
+        return extractedDocumentDao.getExtractedDocumentById(id);
     }
 
+    public ExtractedDocument deleteExtractedDocument(long id){
+        ExtractedDocument documentToBeDeleted = extractedDocumentDao.getExtractedDocumentById(id);
 
-    public void saveImages() {
-        try {
-            List<? extends PictureData> pictures = getAllPicturesFromXLSX();
-
-            if (pictures.isEmpty()) {
-                System.out.println("Nenhuma imagem foi encontrada!");
-            } else {
-                System.out.println(pictures.size() + " imagens foram encontradas!");
-
-                // Itere sobre as imagens
-                for (PictureData picture : pictures) {
-                    // Gere um nome de arquivo único para cada imagem (você pode personalizar isso)
-                    String imageName = "imagem_" + System.currentTimeMillis() + "." + picture.suggestFileExtension();
-
-                    // Caminho completo para salvar a imagem
-                    String imagePath = outputDirPath + imageName;
-
-                    // Escreva os bytes da imagem em um arquivo
-                    byte[] imageBytes = picture.getData();
-
-//                    amazonClientService.uploadFileFile(imageBytes);
-
-
-                    FileOutputStream fos = new FileOutputStream(imagePath);
-                    fos.write(imageBytes);
-                    fos.close();
-
-                    System.out.println("Imagem salva em: " + imagePath);
-                }
-
+        if(documentToBeDeleted != null){
+            for (String imageToBeDeleted : documentToBeDeleted.getImagesListLink()){
+                System.out.println(imageToBeDeleted);
+                amazonClientService.deleteFileFromS3Bucket(imageToBeDeleted);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            extractedDocumentDao.deleteExtractedDocument(documentToBeDeleted);
+            return documentToBeDeleted;
+        }
+        else{
+            return null;
         }
     }
 
-
-//        if(pictures.isEmpty()){
-//            System.out.println("Nenhuma imagem foi encontrada!");
-//        }
-//        else{
-//            System.out.println(pictures.size() + " imagens foram encontradas!");
-//
-//            // Itere sobre as imagens
-//            for (PictureData picture : pictures) {
-//                // Gere um nome de arquivo único para cada imagem (você pode personalizar isso)
-//                String imageName = "imagem_" + System.currentTimeMillis() + "." + picture.suggestFileExtension();
-//
-//                // Caminho completo para salvar a imagem
-//                String imagePath = ExtractedDocumentService.getOutputDirPath() + imageName;
-//
-//                // Escreva os bytes da imagem em um arquivo
-//                byte[] imageBytes = picture.getData();
-//                FileOutputStream fos = new FileOutputStream(imagePath);
-//                fos.write(imageBytes);
-//                fos.close();
-//
-//                System.out.println("Imagem salva em: " + imagePath);
-//            }
-//        }
-
+//    public S3ObjectInputStream getImageByUrl(String url){
+//        return amazonClientService.getFileFromS3Bucket(url);
+//    }
 
 }
