@@ -17,7 +17,6 @@ import java.util.List;
 @Service
 public class DocumentExtractorService {
 
-//    private String inputFilePath;
     private File fileToBeExtracted;
     private String outputDirPath;
 
@@ -84,12 +83,13 @@ public class DocumentExtractorService {
 
 
     // Colocar o retorno como String, null se tiver imagens anexadas no arquivo
-    public void saveImages() {
+    public String saveImages() {
         try {
             List<? extends PictureData> pictures = getAllPicturesFromXLSX();
 
             if (pictures.isEmpty()) {
                 System.out.println("Nenhuma imagem foi encontrada!");
+                return null;
             } else {
                 System.out.println(pictures.size() + " imagens foram encontradas!");
 
@@ -111,10 +111,12 @@ public class DocumentExtractorService {
 
                     System.out.println("Imagem salva em: " + imagePath);
                 }
-
+                return "Imagens extraídas!";
             }
+//            return null;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

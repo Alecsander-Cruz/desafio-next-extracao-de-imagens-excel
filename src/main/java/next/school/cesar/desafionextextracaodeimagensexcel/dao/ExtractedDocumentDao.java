@@ -25,8 +25,6 @@ public class ExtractedDocumentDao {
     public ExtractedDocument getExtractedDocumentById(long id){
         Optional<ExtractedDocument> res = extractedDocumentRepository.findById(id);
 
-//        extractedDocumentRepository.
-
         if(res.isPresent()){
             return res.get();
         }

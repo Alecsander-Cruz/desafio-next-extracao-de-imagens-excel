@@ -30,4 +30,29 @@ public class ExtractorUtils {
         fos.close();
         return convFile;
     }
+
+    public static String getFileExtension(MultipartFile multipartFile){
+        System.out.println("Entrou no get file extension");
+
+        String fileName = multipartFile.getOriginalFilename();
+        System.out.println("pegou o nome do arquivo " + fileName);
+
+
+        int index = fileName.lastIndexOf('.');
+        System.out.println("pegou o index do . " + index);
+
+
+        String extension = null;
+        System.out.println("criou a String extension " + extension);
+
+
+        if (index > 0) {
+            System.out.println("entrou no if");
+            extension = fileName.substring(index+1);
+            System.out.println("adicionou a subtring de fileName a extension");
+            System.out.println(extension);
+        }
+
+        return extension;
+    }
 }

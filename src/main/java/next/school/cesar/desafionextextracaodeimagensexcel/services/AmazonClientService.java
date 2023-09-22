@@ -8,13 +8,8 @@ import com.amazonaws.services.s3.model.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
 
 @Service
 public class AmazonClientService {
@@ -39,41 +34,14 @@ public class AmazonClientService {
         this.s3client = new AmazonS3Client(credentials);
     }
 
-//    private File convertMultiPartToFile(MultipartFile file) throws IOException{
-//        File convFile = new File(file.getOriginalFilename());
-//        FileOutputStream fos = new FileOutputStream(convFile);
-//        fos.write(file.getBytes());
-//        fos.close();
-//        return convFile;
-//    }
-
-//    private String generateFileName(MultipartFile multipartFile){
-//        return new Date().getTime() + "-" + multipartFile.getOriginalFilename().replace(" ", "_");
-//    }
-
     private String generateFileImageName(File file){
         return file.getName().replace(" ", "_");
     }
-
 
     private void uploadFileToS3Bucket(String fileName, File file){
         s3client.putObject(new PutObjectRequest(this.bucketName, fileName, file)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
     }
-
-//    public String uploadFile(MultipartFile multiparFile){
-//        String fileUrl = "";
-//        try{
-//            File file = convertMultiPartToFile(multiparFile);
-//            String fileName = generateFileName(multiparFile);
-//            fileUrl = this.endpointUrl + "/" + bucketName + "/" + fileName;
-//            uploadFileToS3Bucket(fileName, file);
-//            file.delete();
-//        }catch(Exception e){
-//            e.printStackTrace();
-//        }
-//        return fileUrl;
-//    }
 
     public String uploadImage(File file){
         String fileUrl = "";
@@ -87,7 +55,6 @@ public class AmazonClientService {
         }
         return fileUrl;
     }
-
 
     public String deleteFileFromS3Bucket(String fileUrl){
         String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
