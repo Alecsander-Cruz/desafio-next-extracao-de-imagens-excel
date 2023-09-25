@@ -82,16 +82,13 @@ public class DocumentExtractorService {
     }
 
 
-    // Colocar o retorno como String, null se tiver imagens anexadas no arquivo
     public String saveImages() {
         try {
             List<? extends PictureData> pictures = getAllPicturesFromXLSX();
 
             if (pictures.isEmpty()) {
-                System.out.println("Nenhuma imagem foi encontrada!");
                 return null;
             } else {
-                System.out.println(pictures.size() + " imagens foram encontradas!");
 
                 // Itere sobre as imagens
                 for (PictureData picture : pictures) {
@@ -109,11 +106,9 @@ public class DocumentExtractorService {
                     fos.write(imageBytes);
                     fos.close();
 
-                    System.out.println("Imagem salva em: " + imagePath);
                 }
                 return "Imagens extraídas!";
             }
-//            return null;
         } catch (Exception e) {
             e.printStackTrace();
         }
